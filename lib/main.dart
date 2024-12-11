@@ -29,6 +29,7 @@ Future<void> retryInitialization() async {
           applyThemeToAll: true,
           primaryColor: primaryColor,
           textTheme: CupertinoTextThemeData(
+            
               textStyle: appTextStyle,
               actionTextStyle: actionsTextStyle,
               navActionTextStyle: actionsTextStyle),
