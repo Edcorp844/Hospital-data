@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:gsheets/gsheets.dart';
 import 'dart:convert';
 
@@ -172,7 +173,11 @@ class GoogleSheetsService {
 
       // Insert data into the sheet (starting from the last row)
       for (var row in data) {
-        await sheet!.values.appendRow(row, fromColumn: 2); // Append row data
+        var safeRow = row.map((cell) {
+          return "'$cell";
+        }).toList();
+
+        await sheet!.values.appendRow(safeRow, fromColumn: 2);
       }
     } on SocketException {
       throw Exception(
@@ -275,6 +280,34 @@ class GoogleSheetsService {
         map[row[0]] = row[1];
       }
       return map;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<List>?> fetchAllRows() async {
+    try {
+      if (sheet != null) {
+        var rows = await sheet?.values.allRows();
+        return rows;
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Update row in the Google Sheet
+  Future<void> updateRow(int rowIndex, List<String> data) async {
+    try {
+      if (sheet != null) {
+        var safeRow = data.map((cell) {
+          return "'$cell";
+        }).toList();
+        await sheet?.values.insertRow(rowIndex, safeRow).then((_) {
+          debugPrint("Row updated successfully");
+        });
+      }
     } catch (e) {
       rethrow;
     }

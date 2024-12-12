@@ -1,23 +1,23 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/extensions/buildcontext_extension.dart';
-import 'package:myapp/services/data_api_service.dart';
 import 'package:myapp/services/data_service.dart';
 import 'package:myapp/utils/phone_formaters.dart';
+import 'package:myapp/utils/textstyles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AddDataScreen extends StatefulWidget {
-  const AddDataScreen({super.key});
+class EditScreen extends StatefulWidget {
+  const EditScreen({super.key, required this.row});
+
+  final List<dynamic> row;
 
   @override
-  State<AddDataScreen> createState() => _AddDataScreenState();
+  State<EditScreen> createState() => _EditScreenState();
 }
 
-class _AddDataScreenState extends State<AddDataScreen> {
+class _EditScreenState extends State<EditScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -26,9 +26,9 @@ class _AddDataScreenState extends State<AddDataScreen> {
   final TextEditingController _conditionAfterController =
       TextEditingController();
 
-  final DataAPI dataAPI = DataAPI();
+  //final DataAPI dataAPI = DataAPI();
 
-  bool _isSoulWon = false;
+  late bool _isSoulWon;
   final bool _followedUp = false;
   String? name;
 
@@ -37,7 +37,19 @@ class _AddDataScreenState extends State<AddDataScreen> {
   String? _contactError;
   String? _addressError;
   String? _conditionBeforeError;
-  String? _ministersNameError;
+
+  @override
+  void initState() {
+    getName();
+    _nameController.text = widget.row[0];
+    _addressController.text = widget.row[2];
+    _contactController.text = widget.row[1];
+    _conditionBeforeController.text = widget.row[3];
+    _conditionAfterController.text = widget.row[4];
+    _isSoulWon =
+        widget.row[5] == 'Yes' || widget.row[5] == 'YES' ? true : false;
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -48,12 +60,6 @@ class _AddDataScreenState extends State<AddDataScreen> {
     _conditionAfterController.dispose();
 
     super.dispose();
-  }
-
-  @override
-  initState() {
-    getName();
-    super.initState();
   }
 
   getName() async {
@@ -74,66 +80,30 @@ class _AddDataScreenState extends State<AddDataScreen> {
     }
   }
 
-  void validatePhone(String phone) {
-    // Remove all spaces for validation purposes
-    final cleanedPhone = phone.replaceAll(RegExp(r'\s+'), '');
-
-    // Regular expression to validate phone numbers with a 3-digit country code
-    final phoneRegExp = RegExp(
-      r'^\+\d{3}\d{7,12}$', // +XXX followed by 7-12 digits
-    );
-
-    if (cleanedPhone.isEmpty) {
-      setState(() {
-        _contactController.text = '';
-        _contactError = 'Phone number is required.';
-      });
-      return;
-    }
-
-    // Validate against the phone format
-    if (!phoneRegExp.hasMatch(cleanedPhone)) {
-      setState(() {
-        _contactError =
-            'Enter a valid phone number with a 3-digit country code.';
-      });
-      return;
-    }
-
-    // If valid, clear the error message
-    setState(() {
-      _contactError = null;
-    });
-  }
-
-  bool _validateFields() {
-    setState(() {
-      _nameError = _nameController.text.isEmpty ? 'Name is required' : null;
-      validatePhone(_contactController.text);
-      _addressError =
-          _addressController.text.isEmpty || _addressController.text == ''
-              ? 'Address is required'
-              : null;
-      _conditionBeforeError = _conditionBeforeController.text.isEmpty
-          ? 'Condition before is required'
-          : null;
-    });
-
-    return _nameError == null &&
-        _contactError == null &&
-        _addressError == null &&
-        _conditionBeforeError == null &&
-        _ministersNameError == null;
-  }
-
-  void _addData() async {
+  void _updateData() async {
     try {
-      String date = dataAPI.formatDate(DateTime.now());
+      // Fetch all rows of data (you can also limit the number of rows to avoid unnecessary data fetching)
+      var allRows = await GoogleSheetsService().fetchAllRows();
+      debugPrint(widget.row.toString());
+
+      // Find the row that matches all conditions (address, name, contact, date)
+      var rowToUpdate = allRows?.firstWhere(
+        (row) =>
+            row[2] == widget.row[0] && // Check if the date matches
+            row[3] == widget.row[1] && // Check if the name matches
+            row[4] == widget.row[2] && // Check if the contact matches
+            row[5] == widget.row[3], // Check if the address matches
+        orElse: () {
+          throw Exception('No Matching data found');
+        }, // Return null if not found
+      );
+
       String won = _isSoulWon ? 'Yes' : 'No';
       String followedUp = _followedUp ? 'Yes' : 'No';
 
-      List<String> data = [
-        date,
+      List<String> newData = [
+        rowToUpdate?[0],
+        rowToUpdate?[1],
         _nameController.text,
         _contactController.text,
         _addressController.text,
@@ -144,9 +114,20 @@ class _AddDataScreenState extends State<AddDataScreen> {
         name ?? '',
       ];
 
-      await dataAPI.postData([data]);
+      if (rowToUpdate != null) {
+        // Modify the row with the new data
+        int rowIndex = allRows!.indexOf(rowToUpdate);
+        allRows[rowIndex] = newData;
+
+        // Update the row in the sheet (replace the old row with the updated data)
+        await GoogleSheetsService()
+            .updateRow(rowIndex + 1, newData); // +1 for 1-based index
+      } else {
+        throw Exception('No Matching data found');
+      }
     } catch (err) {
       showCupertinoDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) => CupertinoAlertDialog(
           title: const Text("Error"),
@@ -162,28 +143,27 @@ class _AddDataScreenState extends State<AddDataScreen> {
     }
   }
 
+  void poptwice() {
+    context.pop();
+    context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.systemGroupedBackground,
       navigationBar: CupertinoNavigationBar(
-        previousPageTitle: "Back",
+        leading: CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Text('Cancel', style: actionsTextStyle),
+            onPressed: () {
+              context.pop();
+            }),
         trailing: CupertinoButton(
-          padding: const EdgeInsets.all(0),
-          onPressed: () {
-            if (_validateFields()) {
-              context.showLoadingDialog(_addData, () {
-                context.pop();
-              });
-            }
-          },
-          child: Text(
-            "Done",
-            style: const CupertinoTextThemeData()
-                .textStyle
-                .copyWith(color: context.primaryColor),
-          ),
-        ),
+            padding: EdgeInsets.zero,
+            child: Text('Done', style: actionsTextStyle),
+            onPressed: () {
+              context.showLoadingDialog(_updateData, poptwice);
+            }),
       ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -210,7 +190,7 @@ class _AddDataScreenState extends State<AddDataScreen> {
                             : null,
                         child: CupertinoTextFormFieldRow(
                           onChanged: (value) {
-                            validatePhone(value);
+                            //validatePhone(value);
                           },
                           controller: _contactController,
                           keyboardType: TextInputType.phone,

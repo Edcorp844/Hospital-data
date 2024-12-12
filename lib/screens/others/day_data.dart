@@ -1,10 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myapp/extensions/buildcontext_extension.dart';
-import 'package:myapp/main.dart';
-import 'package:myapp/utils/textstyles.dart';
+import 'package:myapp/screens/others/edit_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DayDataScreen extends StatefulWidget {
   final String date;
@@ -37,31 +36,111 @@ class _DayDataScreenState extends State<DayDataScreen> {
         previousPageTitle: 'Back',
 
         middle: Text(widget.date),
-        trailing: CupertinoButton(
+       /*  trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () {},
           child: Text('Report', style: actionsTextStyle),
-        ),
+        ), */
       ),
       child: SafeArea(
         child: Column(
           children: [
             ClipRRect(
               child: Container(
-                  padding: const EdgeInsets.all(16),
-                  color: CupertinoTheme.of(context).barBackgroundColor,
-                  child: Row(
-                      children: titlesWithoutDate
-                          .sublist(0, (titlesWithoutDate.length / 2).floor())
-                          .map((title) => Row(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                color: CupertinoTheme.of(context).barBackgroundColor,
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.2,
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Color Map',
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              width: 50,
+                              height: 2,
+                              decoration: const BoxDecoration(
+                                  gradient: LinearGradient(colors: [
+                                CupertinoColors.systemBrown,
+                                CupertinoColors.systemPink,
+                                CupertinoColors.systemPurple,
+                                CupertinoColors.systemBlue,
+                                CupertinoColors.systemGreen
+                              ])),
+                            )
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10), // Optional spacing
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(title.toString()),
-                                  const SizedBox(
-                                    width: 10,
-                                  )
+                                  Text(
+                                    titlesWithoutDate[1],
+                                    style: const TextStyle(
+                                      color: CupertinoColors.systemPink,
+                                    ),
+                                  ),
+                                  Text(
+                                    titlesWithoutDate[2],
+                                    style: const TextStyle(
+                                      color: CupertinoColors.systemPurple,
+                                    ),
+                                  ),
                                 ],
-                              ))
-                          .toList())),
+                              ),
+                              const SizedBox(width: 5),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    titlesWithoutDate[3],
+                                    style: const TextStyle(
+                                      color: CupertinoColors.systemBlue,
+                                    ),
+                                  ),
+                                  Text(
+                                    titlesWithoutDate[4],
+                                    style: const TextStyle(
+                                        //color: CupertinoColors.systemPink,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 5),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    titlesWithoutDate[5],
+                                    style: const TextStyle(
+                                      color: CupertinoColors.systemGreen,
+                                    ),
+                                  ),
+                                  Text(
+                                    titlesWithoutDate[7],
+                                    style: const TextStyle(
+                                      color: CupertinoColors.systemCyan,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ]),
+              ),
             ),
             Expanded(
               child: CupertinoScrollbar(
@@ -101,16 +180,40 @@ class _DayDataScreenState extends State<DayDataScreen> {
                                 actions: [
                                   CupertinoContextMenuAction(
                                     trailingIcon: CupertinoIcons.phone,
-                                    onPressed: () {
-                                      debugPrint('Call button pressed');
+                                    onPressed: () async {
                                       context.pop();
+                                      final Uri url = Uri(
+                                          scheme: 'tel',
+                                          path: '${row[1] ?? ''}');
+                                      if (await canLaunchUrl(url)) {
+                                        await launchUrl(url);
+                                      } else {
+                                        showDialog(
+                                            // ignore: use_build_context_synchronously
+                                            context: context,
+                                            builder: (context) {
+                                              return const CupertinoAlertDialog(
+                                                title: Text('Alert'),
+                                                content: Text(
+                                                    'Error launching phone'),
+                                              );
+                                            });
+                                      }
                                     },
                                     child: const Text('Call'),
                                   ),
                                   CupertinoContextMenuAction(
                                     trailingIcon: CupertinoIcons.doc_on_doc,
                                     onPressed: () {
-                                      debugPrint('Call button pressed');
+                                      Clipboard.setData(ClipboardData(text: '''
+${titlesWithoutDate[0]}   : ${row[0] ?? ''}
+${titlesWithoutDate[1]}   : ${row[1] ?? ''}
+${titlesWithoutDate[2]}   : ${row[2] ?? ''}
+${titlesWithoutDate[3]}   : ${row[3] ?? ''}
+${titlesWithoutDate[4]}   : ${row[4] ?? ''}
+${titlesWithoutDate[5]}   : ${row[5] ?? ''}
+${titlesWithoutDate[7]}   : ${row[7] ?? ''}
+                                      '''));
                                       context.pop();
                                     },
                                     child: const Text('Copy'),
@@ -118,8 +221,8 @@ class _DayDataScreenState extends State<DayDataScreen> {
                                   CupertinoContextMenuAction(
                                     trailingIcon: CupertinoIcons.pencil_circle,
                                     onPressed: () {
-                                      debugPrint('Call button pressed');
                                       context.pop();
+                                      context.push(EditScreen(row: row));
                                     },
                                     child: const Text('Edit'),
                                   ),
@@ -168,11 +271,16 @@ class _DayDataScreenState extends State<DayDataScreen> {
                                       const SizedBox(height: 5),
                                       Text(
                                           (row[5] == 'Yes' || row[5] == 'YES')
-                                              ? 'Soul won'
+                                              ? 'Won Soul'
                                               : 'Was Already Born Again',
                                           style: const TextStyle(
                                               color:
                                                   CupertinoColors.systemGreen)),
+                                      const SizedBox(height: 5),
+                                      Text('${row[7] ?? ''}',
+                                          style: const TextStyle(
+                                              color:
+                                                  CupertinoColors.systemCyan)),
                                     ],
                                   ),
                                 ),

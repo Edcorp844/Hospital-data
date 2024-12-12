@@ -209,6 +209,7 @@ class QRScannerScreenState extends State<QRScannerScreen>
           scannedText = scanData.code; // Capture the scanned QR code
         });
 
+        // ignore: use_build_context_synchronously
         context.showLoadingDialog(() async {
           await GoogleSheetsService()
               .hasAccess(scannedText!)
