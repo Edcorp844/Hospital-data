@@ -39,21 +39,18 @@ class _MessagesState extends State<Messages> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const SafeArea(
-                      child: Center(child: Text('No messages')));
+                    child: Center(child: Text('No messages')),
+                  );
                 } else {
                   final messages = snapshot.data!;
-                  return SizedBox(
-                    height: MediaQuery.of(context).size.height -
-                        90, // Adjust the height based on the UI needs
-                    child: ListView.builder(
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        final message = messages[index];
-                        return CupertinoListTile(
-                          title: Text(message['text'] ?? 'No Text'),
-                        );
-                      },
-                    ),
+                  return ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      return CupertinoListTile(
+                        title: Text(message['text'] ?? 'No Text'),
+                      );
+                    },
                   );
                 }
               },
