@@ -7,7 +7,6 @@ import 'package:http/http.dart';
 import 'package:myapp/extensions/buildcontext_extension.dart';
 import 'package:myapp/screens/data.dart';
 import 'package:myapp/screens/home.dart';
-import 'package:myapp/screens/messages.dart';
 import 'package:myapp/screens/others/error_screen.dart';
 import 'package:myapp/screens/others/qr_access.dart';
 import 'package:myapp/screens/settings.dart';
@@ -29,7 +28,6 @@ Future<void> retryInitialization() async {
           applyThemeToAll: true,
           primaryColor: primaryColor,
           textTheme: CupertinoTextThemeData(
-            
               textStyle: appTextStyle,
               actionTextStyle: actionsTextStyle,
               navActionTextStyle: actionsTextStyle),
@@ -240,18 +238,6 @@ class _MyHomePageState extends State<TabController> {
               label: "Data"),
           BottomNavigationBarItem(
               activeIcon: SvgPicture.asset(
-                'assets/svg/messagesIconactive.svg',
-                colorFilter:
-                    ColorFilter.mode(context.primaryColor, BlendMode.srcIn),
-              ),
-              icon: SvgPicture.asset(
-                'assets/svg/messagesicon.svg',
-                colorFilter: const ColorFilter.mode(
-                    CupertinoColors.systemGrey, BlendMode.srcIn),
-              ),
-              label: "Messages"),
-          BottomNavigationBarItem(
-              activeIcon: SvgPicture.asset(
                 'assets/svg/settingsIconactive.svg',
                 colorFilter:
                     ColorFilter.mode(context.primaryColor, BlendMode.srcIn),
@@ -272,8 +258,6 @@ class _MyHomePageState extends State<TabController> {
             case 1:
               return const DataScreen();
             case 2:
-              return const Messages();
-            case 3:
               return Settings(
                 email: widget.email,
               );

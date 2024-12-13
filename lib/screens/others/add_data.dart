@@ -95,7 +95,7 @@ class _AddDataScreenState extends State<AddDataScreen> {
     if (!phoneRegExp.hasMatch(cleanedPhone)) {
       setState(() {
         _contactError =
-            'Enter a valid phone number with a 3-digit country code.';
+            'Enter a valid phone number with a country code. eg +256xxxxxxxxxx';
       });
       return;
     }

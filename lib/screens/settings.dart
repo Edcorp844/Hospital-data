@@ -123,7 +123,7 @@ class _SettingsState extends State<Settings> {
                     CupertinoListTile(
                       title: const Text('Address'),
                       trailing: Text(
-                        profileData["position"] ?? "Position not available",
+                        profileData["address"] ?? "Position not available",
                         style: CupertinoTheme.of(context).textTheme.textStyle,
                       ),
                     ),

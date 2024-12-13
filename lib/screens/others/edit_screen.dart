@@ -80,6 +80,57 @@ class _EditScreenState extends State<EditScreen> {
     }
   }
 
+  void validatePhone(String phone) {
+    // Remove all spaces for validation purposes
+    final cleanedPhone = phone.replaceAll(RegExp(r'\s+'), '');
+
+    // Regular expression to validate phone numbers with a 3-digit country code
+    final phoneRegExp = RegExp(
+      r'^\+\d{3}\d{7,12}$', // +XXX followed by 7-12 digits
+    );
+
+    if (cleanedPhone.isEmpty) {
+      setState(() {
+        _contactController.text = '';
+        _contactError = 'Phone number is required.';
+      });
+      return;
+    }
+
+    // Validate against the phone format
+    if (!phoneRegExp.hasMatch(cleanedPhone)) {
+      setState(() {
+        _contactError =
+            'Enter a valid phone number with a country code. eg +256xxxxxxxxxx';
+      });
+      return;
+    }
+
+    // If valid, clear the error message
+    setState(() {
+      _contactError = null;
+    });
+  }
+
+  bool _validateFields() {
+    setState(() {
+      _nameError = _nameController.text.isEmpty ? 'Name is required' : null;
+      validatePhone(_contactController.text);
+      _addressError =
+          _addressController.text.isEmpty || _addressController.text == ''
+              ? 'Address is required'
+              : null;
+      _conditionBeforeError = _conditionBeforeController.text.isEmpty
+          ? 'Condition before is required'
+          : null;
+    });
+
+    return _nameError == null &&
+        _contactError == null &&
+        _addressError == null &&
+        _conditionBeforeError == null;
+  }
+
   void _updateData() async {
     try {
       // Fetch all rows of data (you can also limit the number of rows to avoid unnecessary data fetching)
@@ -162,7 +213,9 @@ class _EditScreenState extends State<EditScreen> {
             padding: EdgeInsets.zero,
             child: Text('Done', style: actionsTextStyle),
             onPressed: () {
-              context.showLoadingDialog(_updateData, poptwice);
+              if (_validateFields()) {
+                context.showLoadingDialog(_updateData, poptwice);
+              }
             }),
       ),
       child: Padding(
