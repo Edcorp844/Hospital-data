@@ -131,7 +131,7 @@ class _DataScreenState extends State<DataScreen> {
                           );
                         } else {
                           final data = snapshot.data!;
-                          print(data);
+
                           final titles = data['title'] != null
                               ? data['title'] as List<dynamic>
                               : [];

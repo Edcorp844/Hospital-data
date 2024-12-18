@@ -22,20 +22,22 @@ class _MaterilReadScreenState extends State<MaterialReadScreen> {
           ),
         ),
         child: SafeArea(
-            child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(widget.content,
-                    style: const TextStyle(
-                      fontWeight:
-                          FontWeight.normal, // Normal text for the value
-                      color: CupertinoColors.systemGrey,
-                    )),
-              )
-            ],
-          ),
-        )));
+            child: CupertinoScrollbar(
+              child: SingleChildScrollView(
+                        child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(widget.content,
+                      style: const TextStyle(
+                        fontWeight:
+                            FontWeight.normal, // Normal text for the value
+                        color: CupertinoColors.systemGrey,
+                      )),
+                )
+              ],
+                        ),
+                      ),
+            )));
   }
 }

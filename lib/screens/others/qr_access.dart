@@ -1,6 +1,8 @@
 import 'package:myapp/extensions/buildcontext_extension.dart';
-import 'package:myapp/main.dart';
+import 'package:myapp/screens/tab_controller.dart';
+
 import 'package:myapp/services/data_service.dart';
+import 'package:myapp/utils/errors/acess_error.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
